@@ -1,4 +1,4 @@
-# Help Me Fast (Android)
+# <img src="app/assets/logo.png" width="32" height="32" alt="Logo" /> Help Me Fast (Android)
 
 ![Android](https://img.shields.io/badge/Platform-Android-3DDC84?logo=android) ![Expo](https://img.shields.io/badge/Expo-SDK_54-000020?logo=expo) ![React Native](https://img.shields.io/badge/React_Native-0.81-61DAFB?logo=react) ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)
 
@@ -7,6 +7,10 @@
 **[Download APK](https://github.com/sidnei-almeida/help_me_fast_android/releases)** (latest release) — install on your Android device without building from source.
 
 The mobile counterpart to the [Help Me Fast](https://github.com/sidnei-almeida/help_me_fast) desktop app (Electron/Linux). Same design language and feature set, adapted for touch and small screens. No cloud, no account; config, profile, and history are stored locally on the device.
+
+<img src="screenshots.png" alt="Help Me Fast app screenshots on Android" width="800" />
+
+*App screens on device (Timer, Progress, Profile).*
 
 ---
 
