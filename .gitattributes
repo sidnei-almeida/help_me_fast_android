@@ -1,2 +1,9 @@
-# Auto detect text files and perform LF normalization
+# Auto-detect text files and normalize line endings
 * text=auto
+
+# Git LFS — track large binaries (e.g. for portfolio / releases)
+# Use for files that would exceed GitHub's 100MB limit or bloat the repo.
+*.apk filter=lfs diff=lfs merge=lfs -text
+*.aab filter=lfs diff=lfs merge=lfs -text
+*.AppImage filter=lfs diff=lfs merge=lfs -text
+*.ipa filter=lfs diff=lfs merge=lfs -text

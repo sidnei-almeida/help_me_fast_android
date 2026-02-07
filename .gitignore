@@ -1,0 +1,30 @@
+# OS and editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+*.sublime-*
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.p12
+*.jks
+*.p8
+*.mobileprovision
+
+# Logs and caches
+*.log
+npm-debug.log*
+.npm
+.cache
+.metro-health-check*
+
+# Local / machine-specific (do not commit)
+local.properties
+*.orig.*
