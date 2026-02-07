@@ -4,6 +4,8 @@
 
 > **Prolonged fasting companion for Android** — metabolic timer, progress tracking, and neuroscience-based pattern interruption. Data stays on device (local-first).
 
+**[Download APK](https://github.com/sidnei-almeida/help_me_fast_android/releases)** (latest release) — install on your Android device without building from source.
+
 The mobile counterpart to the [Help Me Fast](https://github.com/sidnei-almeida/help_me_fast) desktop app (Electron/Linux). Same design language and feature set, adapted for touch and small screens. No cloud, no account; config, profile, and history are stored locally on the device.
 
 ---
@@ -105,7 +107,7 @@ On first run, EAS will prompt for an Expo account (create one at [expo.dev](http
 
 For a fully local build without an Expo account, use a development build and Android Studio (Gradle); see `app/ANDROID_SETUP.md` for SDK and environment setup.
 
-**Pre-built APK (portfolio):** A release APK may be available in the `release/` folder (tracked with Git LFS). After cloning, run `git lfs pull` to download it. Alternatively, check the [Releases](https://github.com/sidnei-almeida/help_me_fast_android/releases) page for attached APKs.
+**Pre-built APK:** Download the latest APK from the [Releases](https://github.com/sidnei-almeida/help_me_fast_android/releases) page and install on your Android device.
 
 ---
 

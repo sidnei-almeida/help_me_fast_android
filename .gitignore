@@ -28,3 +28,4 @@ npm-debug.log*
 # Local / machine-specific (do not commit)
 local.properties
 *.orig.*
+help_me_fast/
