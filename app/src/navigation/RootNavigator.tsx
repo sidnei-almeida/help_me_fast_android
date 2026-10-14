@@ -40,6 +40,7 @@ function MainTabs() {
         component={HistoryScreen}
         options={{
           title: 'History',
+          headerShown: false, // screen draws its own header
           tabBarLabel: 'History',
           tabBarIcon: ({ focused, color, size }) => (
             <CalendarDays size={size ?? 24} color={color} strokeWidth={2} />
@@ -51,6 +52,7 @@ function MainTabs() {
         component={ProfileScreen}
         options={{
           title: 'Profile',
+          headerShown: false, // screen draws its own header
           tabBarLabel: 'Profile',
           tabBarIcon: ({ focused, color, size }) => (
             <Settings size={size ?? 24} color={color} strokeWidth={2} />

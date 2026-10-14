@@ -74,7 +74,7 @@ const electrolyteTips: FastingTip[] = [
   },
   {
     id: 'elec-07',
-    text: 'The "keto flu" during fasting is NOT inevitable — it\'s electrolyte deficiency. Proper supplementation eliminates headaches, brain fog, and nausea completely.',
+    text: 'The "keto flu" during fasting is usually an electrolyte problem, not the fast itself. Proper sodium, potassium and magnesium largely prevent headaches, brain fog and nausea.',
     category: 'electrolytes',
     minHours: 16,
     maxHours: Infinity,
@@ -189,14 +189,14 @@ const activityTips: FastingTip[] = [
   },
   {
     id: 'act-04',
-    text: 'Yoga and stretching during fasting reduce cortisol and enhance the parasympathetic "rest and digest" state. This amplifies autophagy.',
+    text: 'Yoga and stretching during fasting lower stress and shift you into a calm, "rest and digest" state — a good counterweight to fasting-related restlessness.',
     category: 'activity',
     minHours: 12,
     maxHours: Infinity,
   },
   {
     id: 'act-05',
-    text: 'Cold showers during fasting activate brown fat tissue and boost norepinephrine by 200-300%. This enhances fat burning and mental alertness simultaneously.',
+    text: 'Cold exposure sharply raises norepinephrine, which boosts alertness and fat mobilization. A brief cool shower can lift a sluggish fasting afternoon.',
     category: 'activity',
     minHours: 0,
     maxHours: Infinity,
@@ -204,7 +204,7 @@ const activityTips: FastingTip[] = [
   },
   {
     id: 'act-06',
-    text: 'Standing desk or light movement every hour prevents blood pooling and keeps metabolism active. Sitting for hours can drop your metabolic rate by 50%.',
+    text: 'Stand up or move for a few minutes every hour. It keeps circulation and energy up, and makes fasting hours pass faster than sitting still.',
     category: 'activity',
     minHours: 0,
     maxHours: Infinity,
@@ -223,7 +223,7 @@ const activityTips: FastingTip[] = [
 const scienceTips: FastingTip[] = [
   {
     id: 'sci-01',
-    text: 'Autophagy (self-eating) peaks between 18-72h of fasting. Your cells literally recycle damaged components — it\'s like a factory reset for your biology.',
+    text: 'Autophagy is your cells\' recycling system for damaged components. Fasting ramps it up in animal studies; in humans the exact timing is still being researched, but longer fasts are thought to increase it.',
     category: 'science',
     minHours: 16,
     maxHours: Infinity,
@@ -231,7 +231,7 @@ const scienceTips: FastingTip[] = [
   },
   {
     id: 'sci-02',
-    text: 'Growth hormone (HGH) increases up to 500% during a 48h fast. This preserves muscle mass while your body burns fat — nature\'s steroid.',
+    text: 'Growth hormone rises substantially during fasting — several-fold in some studies. It helps preserve lean muscle while your body draws on fat for energy.',
     category: 'science',
     minHours: 24,
     maxHours: Infinity,
@@ -254,7 +254,7 @@ const scienceTips: FastingTip[] = [
   },
   {
     id: 'sci-05',
-    text: 'Ketone bodies (BHB) are a cleaner fuel than glucose — they produce fewer free radicals and more ATP per molecule. Your brain actually prefers them.',
+    text: 'Ketones (BHB) are an efficient fuel your brain can use for a large share of its energy during longer fasts — one reason focus often feels steadier.',
     category: 'science',
     minHours: 20,
     maxHours: Infinity,
@@ -269,14 +269,14 @@ const scienceTips: FastingTip[] = [
   },
   {
     id: 'sci-07',
-    text: 'Inflammation markers (CRP, IL-6, TNF-alpha) drop significantly after 24h of fasting. This is why many people report joint pain disappearing during extended fasts.',
+    text: 'Studies link fasting to lower inflammation markers such as CRP and IL-6, and many people report less joint stiffness during longer fasts.',
     category: 'science',
     minHours: 20,
     maxHours: Infinity,
   },
   {
     id: 'sci-08',
-    text: 'Stem cell regeneration of the immune system begins around 48-72h. Your body breaks down old white blood cells and generates new ones from stem cells.',
+    text: 'In mice, prolonged fasting cycles prompted the immune system to clear old white blood cells and regenerate new ones. Human evidence is still early, but promising.',
     category: 'science',
     minHours: 48,
     maxHours: Infinity,
@@ -292,7 +292,7 @@ const scienceTips: FastingTip[] = [
   },
   {
     id: 'sci-10',
-    text: 'mTOR (mammalian target of rapamycin) is suppressed during fasting. This pathway, when chronically activated by constant eating, is linked to cancer growth and accelerated aging.',
+    text: 'mTOR, a key growth pathway, is turned down while you fast. In animal research, constantly elevated mTOR activity is associated with faster aging.',
     category: 'science',
     minHours: 16,
     maxHours: Infinity,
@@ -325,7 +325,7 @@ const mentalTips: FastingTip[] = [
   },
   {
     id: 'ment-04',
-    text: 'Coding while fasting? Many developers report peak flow states during fasted work. The combination of ketones + norepinephrine creates natural "Adderall."',
+    text: 'Many people report deep focus during fasted work. Rising ketones and norepinephrine may help explain the sharper, steadier attention.',
     category: 'mental',
     minHours: 16,
     maxHours: Infinity,
@@ -346,7 +346,7 @@ const mentalTips: FastingTip[] = [
   },
   {
     id: 'ment-07',
-    text: 'Meditation during fasting amplifies both practices. Your brain is already in a heightened awareness state from ketones — adding meditation creates deep theta-wave access.',
+    text: 'Meditation pairs well with fasting. Even 10 minutes of slow breathing can calm a hunger wave and the restlessness that comes with it.',
     category: 'mental',
     minHours: 20,
     maxHours: Infinity,

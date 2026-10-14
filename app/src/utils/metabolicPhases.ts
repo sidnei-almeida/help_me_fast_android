@@ -35,3 +35,10 @@ export function isDangerZone(
   const currentHour = new Date().getHours();
   return dangerZones.some((z) => currentHour >= z.start && currentHour < z.end);
 }
+
+/** The phase that follows the current one, or null when already in the last phase. */
+export function getNextPhase(hours: number): MetabolicPhase | null {
+  const current = getCurrentPhase(hours);
+  const index = METABOLIC_PHASES.indexOf(current);
+  return METABOLIC_PHASES[index + 1] ?? null;
+}

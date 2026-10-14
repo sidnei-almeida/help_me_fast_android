@@ -7,6 +7,8 @@ export interface Config {
   notifications: boolean;
   dangerZones: Array<{ start: number; end: number }>;
   weightUnit: 'kg' | 'lbs';
+  /** Last fast length chosen on the Timer screen (restored on next launch). */
+  lastGoalHours?: number;
 }
 
 export interface Profile {
@@ -38,6 +40,8 @@ export interface FastEntry {
   endTime?: number;
   duration?: number;
   weightLoss?: number;
+  /** Goal the fast was started with (absent on entries saved by older versions). */
+  targetHours?: number;
 }
 
 export interface ProgressEntry {

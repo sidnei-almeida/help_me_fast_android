@@ -15,7 +15,9 @@ import {
   addHistoryEntry as storageAddHistoryEntry,
   getHistoryEntries as storageGetHistoryEntries,
   deleteHistoryEntry as storageDeleteHistoryEntry,
+  fileExists,
 } from '../services/vaultStorage';
+import { scheduleFastNotifications } from '../services/notifications';
 
 export function useVault() {
   const { state, dispatch } = useApp();
@@ -67,6 +69,8 @@ export function useVault() {
           type: 'START_FAST',
           payload: { startTime: d.startTime, targetHours: d.targetHours },
         });
+        // Re-arm reminders in case they were lost (reboot, reinstall, permission granted later).
+        scheduleFastNotifications(d.startTime, d.targetHours);
       }
     },
     [dispatch]
@@ -121,8 +125,17 @@ export function useVault() {
     async (profile: Profile, vaultPath?: string) => {
       const vault = vaultPath || state.vaultPath;
       if (!vault) return false;
-      const profileWithTMB = { ...profile, tmb: profile.tmb || calculateTMB(profile) };
-      const result = await writeJsonFile(`${vault}/profile.json`, profileWithTMB);
+      // TMB depends on weight/height/age/activity, so recompute whenever we have real data.
+      const tmb = profile.weight > 0 ? calculateTMB(profile) : profile.tmb;
+      let avatar = profile.avatar;
+      // In memory the avatar is a data URI; on disk we only keep the relative file path.
+      if (avatar?.startsWith('data:')) {
+        if (!(await fileExists(`${vault}/avatar.png`))) {
+          await storageSaveAvatar(vault, avatar);
+        }
+        avatar = 'avatar.png';
+      }
+      const result = await writeJsonFile(`${vault}/profile.json`, { ...profile, tmb, avatar });
       return result.success;
     },
     [state.vaultPath]

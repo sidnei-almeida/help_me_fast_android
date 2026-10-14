@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, Image, Platform, Pressable } from 'react-native
 import Svg, { Path, Line, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { LinearGradient as ExpoLinearGradient } from 'expo-linear-gradient';
 import { METABOLIC_PHASES, getCurrentPhase } from '../utils/metabolicPhases';
+import { getCurrentStage, getNextStage, getStageColor } from '../data/fastingStages';
+import { formatDuration } from '../utils/date';
 
 const SIZE = 280;
 const VB = 280;
@@ -18,13 +20,6 @@ const PATH_LENGTH = R * ARC_SPAN_RAD;
 
 const TRACK_COLOR = '#E8ECF0';
 const BRAND_GRADIENT = ['#FDCB6E', '#E17055'] as const;
-
-const PHASE_DESCRIPTIONS: Record<string, string> = {
-  Anabolic: 'Digestion phase. Energy from your last meal.',
-  Catabolic: 'Insulin normalizing. Glycogen in use.',
-  'Fat Burning': 'Low insulin. Fat burning and focus.',
-  Ketosis: 'Ketones, autophagy, mental clarity.',
-};
 
 function polar(cx: number, cy: number, r: number, deg: number) {
   const rad = ((deg - 90) * Math.PI) / 180;
@@ -45,6 +40,10 @@ export interface MetabolicWheelProps {
   timerText?: string;
   idleText?: string;
   isActive?: boolean;
+  /** Small line under the timer (e.g. "remaining" / "over goal"). */
+  caption?: string;
+  /** Overrides the phase pill text (e.g. "Goal reached"). */
+  badgeText?: string;
   onPhaseDetailsPress?: () => void;
 }
 
@@ -55,6 +54,8 @@ export function MetabolicWheel({
   timerText,
   idleText,
   isActive = false,
+  caption,
+  badgeText,
   onPhaseDetailsPress,
 }: MetabolicWheelProps) {
   const [showStageCard, setShowStageCard] = useState(false);
@@ -103,7 +104,16 @@ export function MetabolicWheel({
   }, [dividerHours, goalHours]);
 
   const currentPhase = getCurrentPhase(isActive ? currentHours : 0);
-  const phaseDescription = PHASE_DESCRIPTIONS[currentPhase.name] ?? currentPhase.name;
+  // Tapping the wheel: while fasting, explain the current stage; when idle, preview what the goal reaches.
+  const cardStage = getCurrentStage(isActive ? currentHours : goalHours);
+  const cardColor = getStageColor(cardStage);
+  const nextStage = isActive ? getNextStage(currentHours) : null;
+  const cardEyebrow = isActive ? 'You are here' : `At ${Math.round(goalHours)}h you reach`;
+  const cardFooter = isActive
+    ? nextStage
+      ? `Next: ${nextStage.title} in ${formatDuration(nextStage.startHours * 3600 - elapsedSeconds)}`
+      : 'Final stage'
+    : null;
 
   const handleArcPress = () => setShowStageCard((v) => !v);
 
@@ -187,6 +197,7 @@ export function MetabolicWheel({
           <Text style={styles.timerText}>
             {isActive && timerText ? timerText : idleText || timerText || 'Select duration'}
           </Text>
+          {isActive && caption ? <Text style={styles.captionText}>{caption}</Text> : null}
           {isActive && (
             <ExpoLinearGradient
               colors={BRAND_GRADIENT}
@@ -194,7 +205,7 @@ export function MetabolicWheel({
               end={{ x: 1, y: 0 }}
               style={styles.phasePill}
             >
-              <Text style={styles.phasePillText}>{currentPhase.name}</Text>
+              <Text style={styles.phasePillText}>{badgeText ?? currentPhase.name}</Text>
             </ExpoLinearGradient>
           )}
         </View>
@@ -202,22 +213,20 @@ export function MetabolicWheel({
 
       {/* Stage info card — only when user taps the arc area */}
       {showStageCard && (
-        <View style={styles.stageCard}>
-          <View style={[styles.stageIcon, { backgroundColor: currentPhase.color + '20' }]}>
-            <Text style={[styles.stageIconText, { color: currentPhase.color }]}>
-              {currentPhase.name.charAt(0)}
-            </Text>
-          </View>
+        <Pressable style={styles.stageCard} onPress={() => setShowStageCard(false)}>
+          <View style={[styles.stageAccent, { backgroundColor: cardColor }]} />
           <View style={styles.stageTextWrap}>
-            <Text style={styles.stageTitle}>{currentPhase.name}</Text>
-            <Text style={styles.stageDesc}>{phaseDescription}</Text>
+            <Text style={styles.stageEyebrow}>{cardEyebrow}</Text>
+            <Text style={[styles.stageTitle, { color: cardColor }]}>{cardStage.title}</Text>
+            <Text style={styles.stageDesc}>{cardStage.happening}</Text>
+            {cardFooter ? <Text style={styles.stageFooter}>{cardFooter}</Text> : null}
           </View>
           {onPhaseDetailsPress && (
             <Text style={styles.stageDetailsLink} onPress={onPhaseDetailsPress}>
               Phase details
             </Text>
           )}
-        </View>
+        </Pressable>
       )}
     </View>
   );
@@ -276,6 +285,13 @@ const styles = StyleSheet.create({
     color: '#374151',
     letterSpacing: -0.5,
   },
+  captionText: {
+    fontSize: 12,
+    color: '#94a3b8',
+    marginTop: 2,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
   phasePill: {
     marginTop: 8,
     paddingVertical: 6,
@@ -302,48 +318,52 @@ const styles = StyleSheet.create({
   },
   stageCard: {
     width: '100%',
-    maxWidth: 320,
+    maxWidth: 340,
     marginTop: 20,
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'stretch',
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 18,
     padding: 16,
-    borderWidth: 1,
-    borderColor: '#E8ECF0',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.07,
+        shadowRadius: 12,
       },
       android: { elevation: 3 },
     }),
   },
-  stageIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
+  stageAccent: {
+    width: 4,
+    borderRadius: 2,
     marginRight: 14,
   },
-  stageIconText: {
-    fontSize: 18,
-    fontWeight: '700',
-  },
   stageTextWrap: { flex: 1 },
-  stageTitle: {
-    fontSize: 16,
+  stageEyebrow: {
+    fontSize: 10,
     fontWeight: '700',
-    color: '#1e293b',
+    color: '#94a3b8',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
     marginBottom: 2,
+  },
+  stageTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    marginBottom: 4,
   },
   stageDesc: {
     fontSize: 13,
-    color: '#64748b',
-    lineHeight: 18,
+    color: '#475569',
+    lineHeight: 19,
+  },
+  stageFooter: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#1e293b',
+    marginTop: 8,
   },
   stageDetailsLink: {
     fontSize: 13,

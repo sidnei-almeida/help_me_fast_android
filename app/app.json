@@ -2,7 +2,7 @@
   "expo": {
     "name": "Help Me Fast",
     "slug": "help-me-fast",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -26,14 +26,21 @@
         "CAMERA",
         "READ_EXTERNAL_STORAGE"
       ],
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "versionCode": 2
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-font",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-notifications",
+        {
+          "color": "#E17055"
+        }
+      ]
     ],
     "extra": {
       "eas": {

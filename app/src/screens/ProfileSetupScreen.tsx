@@ -46,8 +46,9 @@ const ACTIVITY_OPTIONS: { value: Profile['activityLevel']; label: string }[] = [
 export function ProfileSetupScreen() {
   const { state } = useApp();
   const { saveProfile, saveConfig, loadProfile, deleteVault, saveAvatarToVault } = useVault();
-  const { entries: historyEntries, saveEntry: saveHistoryEntry } = useHistoryStorage();
+  const { entries: historyEntries, loading: historyLoading, saveEntry: saveHistoryEntry } = useHistoryStorage();
   const [loading, setLoading] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
@@ -103,7 +104,7 @@ export function ProfileSetupScreen() {
 
   const handleSave = async () => {
     const name = form.name.trim();
-    const weight = parseWeight(form.weight, weightUnit);
+    const weight = parseWeight(form.weight.replace(',', '.'), weightUnit);
     const height = parseFloat(form.height);
     const age = parseInt(form.age, 10);
 
@@ -156,7 +157,7 @@ export function ProfileSetupScreen() {
 
       await saveProfile(profile);
 
-      if (historyEntries.length === 0 && weight) {
+      if (!historyLoading && historyEntries.length === 0 && weight) {
         await saveHistoryEntry({
           date: new Date().toISOString(),
           weight,
@@ -167,6 +168,8 @@ export function ProfileSetupScreen() {
 
       await loadProfile(state.vaultPath!);
       setAvatarChanged(false);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
     } catch (e) {
       setError('Error saving: ' + (e as Error).message);
     } finally {
@@ -243,7 +246,13 @@ export function ProfileSetupScreen() {
             />
             <TouchableOpacity
               style={styles.suffixTouch}
-              onPress={() => setWeightUnit(weightUnit === 'kg' ? 'lbs' : 'kg')}
+              onPress={() => {
+                // Convert the typed value too, so "120 kg" doesn't silently become "120 lbs".
+                const next: WeightUnit = weightUnit === 'kg' ? 'lbs' : 'kg';
+                const kg = parseWeight(form.weight.replace(',', '.'), weightUnit);
+                setForm((f) => ({ ...f, weight: kg > 0 ? formatWeight(kg, next) : f.weight }));
+                setWeightUnit(next);
+              }}
               hitSlop={8}
             >
               <Text style={styles.suffixText}>{weightUnit}</Text>
@@ -335,7 +344,7 @@ export function ProfileSetupScreen() {
               {loading ? (
                 <ActivityIndicator color="#FFF" size="small" />
               ) : (
-                <Text style={styles.saveButtonText}>Save profile</Text>
+                <Text style={styles.saveButtonText}>{saved ? 'Saved ✓' : 'Save profile'}</Text>
               )}
             </LinearGradient>
           </TouchableOpacity>

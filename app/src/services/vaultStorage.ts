@@ -15,7 +15,7 @@ export function getDefaultVaultPath(): string {
 export async function getLastVaultPath(): Promise<string | null> {
   const path = await AsyncStorage.getItem(VAULT_KEY);
   if (!path) return null;
-  const exists = await FileSystem.getInfoAsync(path, { type: 'directory' }).then(
+  const exists = await FileSystem.getInfoAsync(path).then(
     (i) => i.exists
   ).catch(() => false);
   if (!exists) return null;

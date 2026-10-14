@@ -12,13 +12,15 @@ import {
   Platform,
   Animated,
   Easing,
+  ScrollView,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useApp } from '../context/AppContext';
 import { theme } from '../styles/theme';
 import { parseWeight } from '../utils/weightConverter';
-import { Camera } from 'lucide-react-native';
+import { formatDateShort, localDayKey, pickDateTime } from '../utils/date';
+import { Camera, CalendarDays } from 'lucide-react-native';
 
 const BRAND_GRADIENT = ['#FDCB6E', '#E17055'] as const;
 const INPUT_BG = '#F8F9FA';
@@ -31,8 +33,9 @@ interface AddHistoryModalProps {
   saveEntry: (entry: { date: string; weight?: number; photoUri?: string; note?: string }) => Promise<{ success: boolean; entry?: unknown; error?: string }>;
 }
 
+/** Today's local date as YYYY-MM-DD (toISOString would give the UTC day, wrong late in the evening in UTC-3). */
 function todayISO(): string {
-  return new Date().toISOString().slice(0, 10);
+  return localDayKey(new Date());
 }
 
 function parseDateInput(value: string): Date | null {
@@ -112,7 +115,7 @@ export function AddHistoryModal({ visible, onClose, onSaved, saveEntry }: AddHis
     ]).start(() => onDone());
   };
 
-  const pickImage = async () => {
+  const pickFromLibrary = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
       Alert.alert('Permission', 'We need access to your photos.');
@@ -121,12 +124,43 @@ export function AddHistoryModal({ visible, onClose, onSaved, saveEntry }: AddHis
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
-      aspect: [1, 1],
       quality: 0.8,
     });
     if (!result.canceled && result.assets[0]) {
       setPhotoUri(result.assets[0].uri);
     }
+  };
+
+  const takePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission', 'We need access to your camera.');
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      quality: 0.8,
+    });
+    if (!result.canceled && result.assets[0]) {
+      setPhotoUri(result.assets[0].uri);
+    }
+  };
+
+  const pickImage = () => {
+    Alert.alert('Add photo', undefined, [
+      { text: 'Camera', onPress: takePhoto },
+      { text: 'Gallery', onPress: pickFromLibrary },
+      ...(photoUri ? [{ text: 'Remove', style: 'destructive' as const, onPress: () => setPhotoUri(null) }] : []),
+    ]);
+  };
+
+  const pickDate = async () => {
+    const picked = await pickDateTime({
+      value: parseDateInput(dateStr) ?? new Date(),
+      maximumDate: new Date(),
+    });
+    if (picked) setDateStr(localDayKey(picked));
   };
 
   const handleSave = async () => {
@@ -198,7 +232,8 @@ export function AddHistoryModal({ visible, onClose, onSaved, saveEntry }: AddHis
         ]}
         pointerEvents="box-none"
       >
-        <TouchableOpacity activeOpacity={1} onPress={(e) => e.stopPropagation()} style={styles.card}>
+        <View style={styles.card}>
+          <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <Text style={styles.title}>Add progress</Text>
 
           <Text style={styles.label}>Weight ({weightUnit})</Text>
@@ -223,15 +258,29 @@ export function AddHistoryModal({ visible, onClose, onSaved, saveEntry }: AddHis
             )}
           </TouchableOpacity>
 
-          <Text style={styles.label}>Date (YYYY-MM-DD)</Text>
-          <TextInput
-            style={styles.dateInput}
-            value={dateStr}
-            onChangeText={setDateStr}
-            placeholder={todayISO()}
-            placeholderTextColor={GRAY_MUTED}
-            maxLength={10}
-          />
+          {Platform.OS === 'android' ? (
+            <>
+              <Text style={styles.label}>Date</Text>
+              <TouchableOpacity style={[styles.dateInput, styles.dateButton]} onPress={pickDate} activeOpacity={0.8}>
+                <CalendarDays size={18} color={theme.colors.text.secondary} />
+                <Text style={styles.dateButtonText}>
+                  {dateStr === todayISO() ? 'Today' : formatDateShort(parseDateInput(dateStr) ?? new Date())}
+                </Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <Text style={styles.label}>Date (YYYY-MM-DD)</Text>
+              <TextInput
+                style={styles.dateInput}
+                value={dateStr}
+                onChangeText={setDateStr}
+                placeholder={todayISO()}
+                placeholderTextColor={GRAY_MUTED}
+                maxLength={10}
+              />
+            </>
+          )}
 
           <Text style={styles.label}>Note (optional)</Text>
           <TextInput
@@ -267,7 +316,8 @@ export function AddHistoryModal({ visible, onClose, onSaved, saveEntry }: AddHis
               </LinearGradient>
             </TouchableOpacity>
           </View>
-        </TouchableOpacity>
+          </ScrollView>
+        </View>
       </Animated.View>
     </Modal>
   );
@@ -287,6 +337,7 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 360,
+    maxHeight: '90%',
     backgroundColor: '#FFFFFF',
     borderRadius: 24,
     padding: 32,
@@ -355,6 +406,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: theme.colors.text.primary,
     marginBottom: 20,
+  },
+  dateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  dateButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: theme.colors.text.primary,
   },
   noteInput: {
     minHeight: 64,

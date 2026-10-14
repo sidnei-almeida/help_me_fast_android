@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,14 +12,19 @@ import {
   Dimensions,
   Animated,
   Easing,
+  Alert,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { LineChart } from 'react-native-gifted-charts';
-import { Plus } from 'lucide-react-native';
+import { Plus, Check, X } from 'lucide-react-native';
 import { useApp } from '../context/AppContext';
+import { useVault } from '../hooks/useVault';
 import { useHistoryStorage, type HistoryEntry } from '../hooks/useHistoryStorage';
-import { formatWeight, WeightUnit } from '../utils/weightConverter';
+import { formatWeight, kgToLbs, WeightUnit } from '../utils/weightConverter';
+import { formatDateShort, formatDateTime, formatDuration, localDayKey } from '../utils/date';
+import { FastEntry } from '../types';
 import { AddHistoryModal } from '../components/AddHistoryModal';
 import { theme } from '../styles/theme';
 
@@ -30,20 +35,19 @@ const TIMELINE_COLOR = '#E2E8F0';
 const CHART_HEIGHT = 200;
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-function formatDateShort(iso: string): string {
-  const d = new Date(iso);
-  const day = d.getDate();
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const month = months[d.getMonth()];
-  return `${day} ${month}`;
-}
+const formatDateLabel = formatDateShort;
 
-function formatDateLabel(iso: string): string {
-  const d = new Date(iso);
-  const day = d.getDate();
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const month = months[d.getMonth()];
-  return `${day} ${month}`;
+type Tab = 'weight' | 'fasts';
+
+/** Oldest→newest entries that have a weight. */
+function weighIns(entries: HistoryEntry[]): (HistoryEntry & { weight: number })[] {
+  return entries
+    .filter((e): e is HistoryEntry & { weight: number } => e.weight != null)
+    .sort((a, b) => {
+      const byDate = new Date(a.date).getTime() - new Date(b.date).getTime();
+      if (byDate !== 0) return byDate;
+      return new Date(a.createdAt ?? 0).getTime() - new Date(b.createdAt ?? 0).getTime();
+    });
 }
 
 function WeightChart({
@@ -54,18 +58,32 @@ function WeightChart({
   weightUnit: WeightUnit;
 }) {
   const chartData = useMemo(() => {
-    const withWeight = entries.filter((e): e is HistoryEntry & { weight: number } => e.weight != null);
-    if (withWeight.length === 0) return null;
-    const sorted = [...withWeight].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const sorted = weighIns(entries);
+    if (sorted.length === 0) return null;
+    const toUnit = (kg: number) => (weightUnit === 'lbs' ? kgToLbs(kg) : kg);
     const points = sorted.map((e, i) => ({
-      value: e.weight!,
+      value: toUnit(e.weight),
       label: i === 0 || i === sorted.length - 1 ? formatDateShort(e.date) : '',
     }));
-    if (points.length === 1) return [points[0], { ...points[0] }];
+    if (points.length === 1) points.push({ ...points[0] });
     return points;
   }, [entries, weightUnit]);
 
-  if (!chartData || chartData.length === 0) {
+  // Zoom the Y axis around the data so small changes are visible (instead of starting at 0).
+  const yScale = useMemo(() => {
+    if (!chartData) return null;
+    const values = chartData.map((p) => p.value);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const padding = Math.max(1, (max - min) * 0.2);
+    const offset = Math.max(0, Math.floor(min - padding));
+    const range = Math.max(4, Math.ceil(max + padding - offset));
+    const sections = 4;
+    const step = Math.ceil(range / sections);
+    return { offset, maxValue: step * sections, step, sections };
+  }, [chartData]);
+
+  if (!chartData || chartData.length === 0 || !yScale) {
     return (
       <View style={[styles.chartContainer, styles.chartPlaceholder]}>
         <Text style={styles.chartPlaceholderText}>Add weight entries to see your progress</Text>
@@ -95,12 +113,13 @@ function WeightChart({
         initialSpacing={16}
         endSpacing={16}
         spacing={Math.max(40, (SCREEN_WIDTH - 80) / chartData.length)}
-        noOfSections={4}
-        maxValue={undefined}
+        noOfSections={yScale.sections}
+        yAxisOffset={yScale.offset}
+        maxValue={yScale.maxValue}
+        stepValue={yScale.step}
         yAxisColor="transparent"
         yAxisThickness={0}
         xAxisColor="#E2E8F0"
-        xAxisLabelWidth={40}
         rulesType="solid"
         rulesColor="rgba(226,232,240,0.6)"
         height={CHART_HEIGHT}
@@ -186,12 +205,14 @@ function TimelineCard({
   isLast,
   weightUnit,
   animationDelay = 0,
+  onLongPress,
 }: {
   entry: HistoryEntry;
   isFirst: boolean;
   isLast: boolean;
   weightUnit: WeightUnit;
   animationDelay?: number;
+  onLongPress?: () => void;
 }) {
   const photoUri = entry.photoUri?.startsWith('file://')
     ? entry.photoUri
@@ -206,7 +227,7 @@ function TimelineCard({
         <View style={styles.timelineBullet} />
         {!isLast && <View style={styles.timelineLine} />}
       </View>
-      <View style={styles.timelineCard}>
+      <TouchableOpacity style={styles.timelineCard} onLongPress={onLongPress} activeOpacity={0.9} delayLongPress={350}>
         {photoUri ? (
           <Image source={{ uri: photoUri }} style={styles.timelinePhoto} resizeMode="cover" />
         ) : null}
@@ -223,7 +244,7 @@ function TimelineCard({
             </Text>
           ) : null}
         </View>
-      </View>
+      </TouchableOpacity>
     </View>
   );
   return animationDelay >= 0 ? (
@@ -233,21 +254,109 @@ function TimelineCard({
   );
 }
 
+/** A fast "counts" when it reached its goal (older entries without a goal: 12h+). */
+function isCompleted(f: FastEntry): boolean {
+  const duration = f.duration ?? 0;
+  return duration >= (f.targetHours ?? 12) * 3600;
+}
+
+function computeFastStats(fasts: FastEntry[]) {
+  const finished = fasts.filter((f) => f.duration != null);
+  const totalSeconds = finished.reduce((sum, f) => sum + (f.duration ?? 0), 0);
+  const longest = finished.reduce((max, f) => Math.max(max, f.duration ?? 0), 0);
+
+  // Streak: consecutive local days (ending today or yesterday) with a completed fast ending that day.
+  const days = new Set(finished.filter(isCompleted).map((f) => localDayKey(f.endTime ?? f.startTime)));
+  let streak = 0;
+  const cursor = new Date();
+  if (!days.has(localDayKey(cursor))) cursor.setDate(cursor.getDate() - 1);
+  while (days.has(localDayKey(cursor))) {
+    streak++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return { count: finished.length, totalSeconds, longest, streak };
+}
+
+function FastStatsRow({ fasts }: { fasts: FastEntry[] }) {
+  const stats = useMemo(() => computeFastStats(fasts), [fasts]);
+  const items = [
+    { label: 'Fasts', value: String(stats.count) },
+    { label: 'Streak', value: `${stats.streak}d` },
+    { label: 'Longest', value: `${Math.floor(stats.longest / 3600)}h` },
+    { label: 'Total', value: `${Math.floor(stats.totalSeconds / 3600)}h` },
+  ];
+  return (
+    <View style={styles.statsRow}>
+      {items.map((item) => (
+        <View key={item.label} style={styles.statCard}>
+          <Text style={styles.statLabel}>{item.label}</Text>
+          <Text style={styles.statValue}>{item.value}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+function FastCard({ fast, onLongPress }: { fast: FastEntry; onLongPress: () => void }) {
+  const duration = fast.duration ?? 0;
+  const completed = isCompleted(fast);
+  const goalSeconds = fast.targetHours ? fast.targetHours * 3600 : null;
+  const pct = goalSeconds ? Math.min(duration / goalSeconds, 1) : null;
+  return (
+    <TouchableOpacity style={styles.fastCard} onLongPress={onLongPress} activeOpacity={0.9} delayLongPress={350}>
+      <View style={[styles.fastIcon, { backgroundColor: completed ? '#E6F8F3' : '#FFF5EB' }]}>
+        {completed ? <Check size={18} color={GREEN} strokeWidth={3} /> : <X size={18} color={ORANGE} strokeWidth={3} />}
+      </View>
+      <View style={styles.fastBody}>
+        <Text style={styles.fastDuration}>
+          {formatDuration(duration)}
+          {fast.targetHours ? <Text style={styles.fastGoal}>  / {fast.targetHours}h goal</Text> : null}
+        </Text>
+        <Text style={styles.fastDate}>
+          {formatDateTime(fast.startTime)} → {fast.endTime ? formatDateTime(fast.endTime) : '—'}
+        </Text>
+        {pct != null ? (
+          <View style={styles.fastBar}>
+            <View style={[styles.fastBarFill, { width: `${pct * 100}%`, backgroundColor: completed ? GREEN : ORANGE }]} />
+          </View>
+        ) : null}
+      </View>
+    </TouchableOpacity>
+  );
+}
+
 export function HistoryScreen() {
   const insets = useSafeAreaInsets();
   const { state } = useApp();
+  const { saveProfile, loadProfile, saveHistory } = useVault();
   const weightUnit = (state.config?.weightUnit || 'kg') as WeightUnit;
   const {
     entries,
     loading,
     loadEntries,
     saveEntry,
-    initialWeight,
-    currentWeight,
+    deleteEntry,
   } = useHistoryStorage();
 
+  const [tab, setTab] = useState<Tab>('weight');
   const [modalVisible, setModalVisible] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Entries can be added from other screens (e.g. Profile), so reload whenever the tab gains focus.
+  useFocusEffect(
+    useCallback(() => {
+      loadEntries();
+    }, [loadEntries])
+  );
+
+  const sortedWeighIns = useMemo(() => weighIns(entries), [entries]);
+  const initialWeight = sortedWeighIns[0]?.weight;
+  const currentWeight = sortedWeighIns[sortedWeighIns.length - 1]?.weight;
+
+  const fasts = useMemo(
+    () => [...(state.history?.fasts ?? [])].sort((a, b) => (b.endTime ?? b.startTime) - (a.endTime ?? a.startTime)),
+    [state.history?.fasts]
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -262,79 +371,157 @@ export function HistoryScreen() {
     note?: string;
   }) => {
     const res = await saveEntry(input);
+    // Keep the profile weight (and therefore BMR/TDEE estimates) in sync with the latest weigh-in.
+    const latest = sortedWeighIns[sortedWeighIns.length - 1];
+    const isLatest = !latest || localDayKey(input.date) >= localDayKey(latest.date);
+    if (res.success && input.weight && isLatest && state.profile && state.vaultPath) {
+      const saved = await saveProfile({ ...state.profile, weight: input.weight });
+      if (saved) await loadProfile(state.vaultPath);
+    }
     return { success: res.success, error: res.error };
   };
+
+  const confirmDeleteEntry = (entry: HistoryEntry) => {
+    Alert.alert('Delete entry?', `${formatDateLabel(entry.date)}${entry.weight != null ? ` — ${formatWeight(entry.weight, weightUnit)} ${weightUnit}` : ''}`, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Delete', style: 'destructive', onPress: () => deleteEntry(entry.id) },
+    ]);
+  };
+
+  const confirmDeleteFast = (fast: FastEntry) => {
+    if (!state.history) return;
+    Alert.alert('Delete fast?', `${formatDuration(fast.duration ?? 0)} — ${formatDateTime(fast.startTime)}`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () =>
+          saveHistory({ ...state.history!, fasts: state.history!.fasts.filter((f) => f.id !== fast.id) }),
+      },
+    ]);
+  };
+
+  type Row =
+    | { key: 'chart' | 'stats' | 'empty' | 'fastStats' | 'fastsEmpty' | 'hint' }
+    | { key: string; entry: HistoryEntry; index: number }
+    | { key: string; fast: FastEntry };
+
+  const rows: Row[] =
+    tab === 'weight'
+      ? [
+          { key: 'chart' },
+          { key: 'stats' },
+          ...(entries.length === 0
+            ? [{ key: 'empty' } as Row]
+            : entries.map((entry, index) => ({ key: entry.id, entry, index }))),
+          ...(entries.length > 0 ? [{ key: 'hint' } as Row] : []),
+        ]
+      : [
+          { key: 'fastStats' },
+          ...(fasts.length === 0
+            ? [{ key: 'fastsEmpty' } as Row]
+            : fasts.map((fast) => ({ key: fast.id, fast }))),
+          ...(fasts.length > 0 ? [{ key: 'hint' } as Row] : []),
+        ];
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <Text style={styles.title}>Progress</Text>
-        <TouchableOpacity
-          style={styles.addButtonTouchable}
-          onPress={() => setModalVisible(true)}
-          activeOpacity={0.85}
-        >
-          <LinearGradient
-            colors={[ORANGE_LIGHT, ORANGE]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.addButtonGradient}
+        {tab === 'weight' ? (
+          <TouchableOpacity
+            style={styles.addButtonTouchable}
+            onPress={() => setModalVisible(true)}
+            activeOpacity={0.85}
           >
-            <Plus size={22} color="#FFF" strokeWidth={2} />
-            <Text style={styles.addButtonText}>Add</Text>
-          </LinearGradient>
-        </TouchableOpacity>
+            <LinearGradient
+              colors={[ORANGE_LIGHT, ORANGE]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.addButtonGradient}
+            >
+              <Plus size={22} color="#FFF" strokeWidth={2} />
+              <Text style={styles.addButtonText}>Add</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        ) : null}
       </View>
 
-      {loading ? (
+      <View style={styles.segment}>
+        {(['weight', 'fasts'] as Tab[]).map((t) => (
+          <TouchableOpacity
+            key={t}
+            style={[styles.segmentItem, tab === t && styles.segmentItemActive]}
+            onPress={() => setTab(t)}
+            activeOpacity={0.8}
+          >
+            <Text style={[styles.segmentText, tab === t && styles.segmentTextActive]}>
+              {t === 'weight' ? 'Weight' : 'Fasts'}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {loading && tab === 'weight' ? (
         <View style={styles.loadingWrap}>
           <ActivityIndicator size="large" color={ORANGE} />
         </View>
       ) : (
         <FlatList
-          data={
-            entries.length === 0
-              ? [{ key: 'chart' }, { key: 'stats' }, { key: 'empty' }]
-              : [{ key: 'chart' }, { key: 'stats' }, ...entries.map((e) => ({ ...e, key: e.id }))]
-          }
-          keyExtractor={(item) => (item as { key?: string; id?: string }).key ?? (item as HistoryEntry).id}
+          data={rows}
+          keyExtractor={(item) => item.key}
           contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 24 }]}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={ORANGE} />
           }
-          renderItem={({ item, index }) => {
-            const key = (item as { key?: string }).key;
-            if (key === 'chart') {
-              return <WeightChart entries={entries} weightUnit={weightUnit} />;
-            }
-            if (key === 'stats') {
+          renderItem={({ item }) => {
+            if ('entry' in item) {
               return (
-                <StatsRow
-                  startWeight={initialWeight}
-                  currentWeight={currentWeight}
+                <TimelineCard
+                  entry={item.entry}
+                  isFirst={item.index === 0}
+                  isLast={item.index === entries.length - 1}
                   weightUnit={weightUnit}
+                  animationDelay={Math.min(item.index, 8) * 55}
+                  onLongPress={() => confirmDeleteEntry(item.entry)}
                 />
               );
             }
-            if (key === 'empty') {
-              return (
-                <View style={styles.empty}>
-                  <Text style={styles.emptyText}>No entries yet</Text>
-                  <Text style={styles.emptySub}>Tap Add to record weight or a photo</Text>
-                </View>
-              );
+            if ('fast' in item) {
+              return <FastCard fast={item.fast} onLongPress={() => confirmDeleteFast(item.fast)} />;
             }
-            const entry = item as HistoryEntry;
-            const entryIndex = index - 2;
-            return (
-              <TimelineCard
-                entry={entry}
-                isFirst={entryIndex === 0}
-                isLast={entryIndex === entries.length - 1}
-                weightUnit={weightUnit}
-                animationDelay={entryIndex * 55}
-              />
-            );
+            switch (item.key) {
+              case 'chart':
+                return <WeightChart entries={entries} weightUnit={weightUnit} />;
+              case 'stats':
+                return (
+                  <StatsRow
+                    startWeight={initialWeight}
+                    currentWeight={currentWeight}
+                    weightUnit={weightUnit}
+                  />
+                );
+              case 'fastStats':
+                return <FastStatsRow fasts={fasts} />;
+              case 'empty':
+                return (
+                  <View style={styles.empty}>
+                    <Text style={styles.emptyText}>No entries yet</Text>
+                    <Text style={styles.emptySub}>Tap Add to record weight or a photo</Text>
+                  </View>
+                );
+              case 'fastsEmpty':
+                return (
+                  <View style={styles.empty}>
+                    <Text style={styles.emptyText}>No fasts yet</Text>
+                    <Text style={styles.emptySub}>Finished fasts show up here</Text>
+                  </View>
+                );
+              case 'hint':
+                return <Text style={styles.hint}>Long-press an item to delete it</Text>;
+              default:
+                return null;
+            }
           }}
         />
       )}
@@ -412,6 +599,67 @@ const styles = StyleSheet.create({
     color: theme.colors.text.muted,
     marginTop: 8,
   },
+  hint: {
+    fontSize: 12,
+    color: theme.colors.text.muted,
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  segment: {
+    flexDirection: 'row',
+    marginHorizontal: 24,
+    marginTop: 16,
+    padding: 4,
+    borderRadius: 12,
+    backgroundColor: '#E2E8F0',
+  },
+  segmentItem: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 9,
+    alignItems: 'center',
+  },
+  segmentItemActive: {
+    backgroundColor: '#FFFFFF',
+    ...Platform.select({
+      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 3 },
+      android: { elevation: 2 },
+    }),
+  },
+  segmentText: { fontSize: 14, fontWeight: '600', color: theme.colors.text.secondary },
+  segmentTextActive: { color: ORANGE },
+  fastCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 12,
+    ...Platform.select({
+      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8 },
+      android: { elevation: 2 },
+    }),
+  },
+  fastIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  fastBody: { flex: 1 },
+  fastDuration: { fontSize: 17, fontWeight: '700', color: theme.colors.text.primary },
+  fastGoal: { fontSize: 13, fontWeight: '500', color: theme.colors.text.muted },
+  fastDate: { fontSize: 12, color: theme.colors.text.secondary, marginTop: 2 },
+  fastBar: {
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#EDF2F7',
+    marginTop: 8,
+    overflow: 'hidden',
+  },
+  fastBarFill: { height: '100%', borderRadius: 2 },
   chartContainer: {
     marginBottom: 16,
     height: CHART_HEIGHT,
