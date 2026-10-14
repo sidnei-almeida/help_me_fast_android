@@ -1,13 +1,10 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { COMMON_FAST_TYPES } from '../utils/fastTypes';
 import { theme } from '../styles/theme';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const H_PADDING = 24;
 const GAP = 12;
 const COLS = 4;
-const CARD_WIDTH = (SCREEN_WIDTH - H_PADDING * 2 - GAP * (COLS - 1)) / COLS;
 
 const ORANGE = '#E17055';
 const ORANGE_BG = '#FFF5EB';
@@ -19,6 +16,17 @@ interface FastTypeSelectorProps {
 
 const INTERMITTENT = COMMON_FAST_TYPES.filter((t) => t.hours <= 20);
 const PROLONGED = COMMON_FAST_TYPES.filter((t) => t.hours > 20);
+
+/** Splits into rows of COLS; short rows are padded so every card keeps the same width. */
+function toRows<T>(items: T[]): (T | null)[][] {
+  const rows: (T | null)[][] = [];
+  for (let i = 0; i < items.length; i += COLS) {
+    const row: (T | null)[] = items.slice(i, i + COLS);
+    while (row.length < COLS) row.push(null);
+    rows.push(row);
+  }
+  return rows;
+}
 
 export function FastTypeSelector({ selectedHours, onSelectHours }: FastTypeSelectorProps) {
   const renderCard = (type: (typeof COMMON_FAST_TYPES)[0]) => {
@@ -40,16 +48,22 @@ export function FastTypeSelector({ selectedHours, onSelectHours }: FastTypeSelec
     );
   };
 
+  const renderGrid = (types: typeof COMMON_FAST_TYPES) => (
+    <View style={styles.grid}>
+      {toRows(types).map((row, r) => (
+        <View key={r} style={styles.row}>
+          {row.map((type, c) => (type ? renderCard(type) : <View key={`empty-${c}`} style={[styles.card, styles.cardSlot]} />))}
+        </View>
+      ))}
+    </View>
+  );
+
   return (
     <View style={styles.container}>
       <Text style={styles.sectionLabel}>Intermittent fast</Text>
-      <View style={styles.grid}>
-        {INTERMITTENT.map(renderCard)}
-      </View>
+      {renderGrid(INTERMITTENT)}
       <Text style={[styles.sectionLabel, styles.sectionLabelSpaced]}>Prolonged</Text>
-      <View style={styles.grid}>
-        {PROLONGED.map(renderCard)}
-      </View>
+      {renderGrid(PROLONGED)}
     </View>
   );
 }
@@ -65,13 +79,14 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.xs,
   },
   sectionLabelSpaced: { marginTop: theme.spacing.lg },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: GAP,
-  },
+  grid: { gap: GAP },
+  row: { flexDirection: 'row', gap: GAP },
+  // Same box model as a card (padding + border) so filler slots take exactly one card's width.
+  cardSlot: { backgroundColor: 'transparent', elevation: 0, shadowOpacity: 0 },
   card: {
-    width: CARD_WIDTH,
+    flex: 1,
+    flexBasis: 0,
+    minWidth: 0,
     minHeight: 72,
     paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.sm,

@@ -17,7 +17,7 @@ export function PanicButton({ onPress }: { onPress: () => void }) {
       </View>
       <View style={styles.text}>
         <Text style={styles.title}>Struggling right now?</Text>
-        <Text style={styles.sub}>Hungry, craving or feeling off — check in first</Text>
+        <Text style={styles.sub}>Hungry, craving or feeling off? Check in first</Text>
       </View>
       <ChevronRight size={18} color="#94a3b8" />
     </TouchableOpacity>

@@ -41,7 +41,7 @@ const electrolyteTips: FastingTip[] = [
     category: 'electrolytes',
     minHours: 0,
     maxHours: Infinity,
-    source: 'Cole Robinson — Snake Diet',
+    source: 'Cole Robinson, Snake Diet',
   },
   {
     id: 'elec-03',
@@ -52,15 +52,15 @@ const electrolyteTips: FastingTip[] = [
   },
   {
     id: 'elec-04',
-    text: 'Your kidneys flush sodium faster during fasting because insulin is low. You need 2-3x more sodium than normal — around 2000-3000mg/day.',
+    text: 'Your kidneys flush sodium faster during fasting because insulin is low. You need 2-3x more sodium than normal, around 2000-3000mg/day.',
     category: 'electrolytes',
     minHours: 8,
     maxHours: Infinity,
-    source: 'Dr. Jason Fung — The Complete Guide to Fasting',
+    source: 'Dr. Jason Fung, The Complete Guide to Fasting',
   },
   {
     id: 'elec-05',
-    text: 'Potassium prevents muscle cramps and heart palpitations during fasting. NoSalt or Nu-Salt (potassium chloride) is the cheapest source — about 1300mg per teaspoon.',
+    text: 'Potassium prevents muscle cramps and heart palpitations during fasting. NoSalt or Nu-Salt (potassium chloride) is the cheapest source, with about 1300mg per teaspoon.',
     category: 'electrolytes',
     minHours: 8,
     maxHours: Infinity,
@@ -88,7 +88,7 @@ const electrolyteTips: FastingTip[] = [
   },
   {
     id: 'elec-09',
-    text: 'Don\'t chug Snake Juice all at once — sip it throughout the day. Too much potassium at once can cause nausea. Your body absorbs small doses better.',
+    text: 'Don\'t chug Snake Juice all at once. Sip it throughout the day. Too much potassium at once can cause nausea. Your body absorbs small doses better.',
     category: 'electrolytes',
     minHours: 0,
     maxHours: Infinity,
@@ -121,14 +121,14 @@ const electrolyteTips: FastingTip[] = [
 const hydrationTips: FastingTip[] = [
   {
     id: 'hydr-01',
-    text: 'Aim for 2-3 liters of water per day while fasting. Your body releases water as glycogen depletes — you need to replace it.',
+    text: 'Aim for 2-3 liters of water per day while fasting. Your body releases water as glycogen depletes, and you need to replace it.',
     category: 'hydration',
     minHours: 0,
     maxHours: Infinity,
   },
   {
     id: 'hydr-02',
-    text: 'Black coffee and plain tea are fine during fasting — they don\'t break your fast and can suppress appetite. But they\'re diuretics, so drink extra water.',
+    text: 'Black coffee and plain tea are fine during fasting. They don\'t break your fast and can suppress appetite. But they\'re diuretics, so drink extra water.',
     category: 'hydration',
     minHours: 0,
     maxHours: Infinity,
@@ -142,21 +142,21 @@ const hydrationTips: FastingTip[] = [
   },
   {
     id: 'hydr-04',
-    text: 'Sparkling water can help with hunger pangs — the carbonation fills your stomach temporarily and the bubbles trick your brain into feeling "full".',
+    text: 'Sparkling water can help with hunger pangs. The carbonation fills your stomach temporarily and the bubbles trick your brain into feeling "full".',
     category: 'hydration',
     minHours: 8,
     maxHours: Infinity,
   },
   {
     id: 'hydr-05',
-    text: 'Apple cider vinegar (1 tbsp in water) can reduce hunger and blood sugar spikes when you eventually eat. It technically has ~3 calories — negligible for fasting purposes.',
+    text: 'Apple cider vinegar (1 tbsp in water) can reduce hunger and blood sugar spikes when you eventually eat. It technically has ~3 calories, which is negligible for fasting purposes.',
     category: 'hydration',
     minHours: 0,
     maxHours: Infinity,
   },
   {
     id: 'hydr-06',
-    text: 'Water with a pinch of salt absorbs better than plain water. Your intestines need sodium to transport water into cells — plain water can actually flush electrolytes.',
+    text: 'Water with a pinch of salt absorbs better than plain water. Your intestines need sodium to transport water into cells, and plain water alone can flush electrolytes.',
     category: 'hydration',
     minHours: 0,
     maxHours: Infinity,
@@ -175,21 +175,21 @@ const activityTips: FastingTip[] = [
   },
   {
     id: 'act-02',
-    text: 'Fasted weight training depletes glycogen faster, accelerating the switch to fat burning. Keep volume moderate — your recovery is slower without food.',
+    text: 'Fasted weight training depletes glycogen faster, accelerating the switch to fat burning. Keep volume moderate, since recovery is slower without food.',
     category: 'activity',
     minHours: 4,
     maxHours: 24,
   },
   {
     id: 'act-03',
-    text: 'Avoid high-intensity interval training (HIIT) beyond 24h of fasting. Your glycogen is depleted — HIIT without fuel causes excessive cortisol and muscle breakdown.',
+    text: 'Avoid high-intensity interval training (HIIT) beyond 24h of fasting. Your glycogen is depleted, and HIIT without fuel causes excessive cortisol and muscle breakdown.',
     category: 'activity',
     minHours: 24,
     maxHours: Infinity,
   },
   {
     id: 'act-04',
-    text: 'Yoga and stretching during fasting lower stress and shift you into a calm, "rest and digest" state — a good counterweight to fasting-related restlessness.',
+    text: 'Yoga and stretching during fasting lower stress and shift you into a calm, "rest and digest" state, a good counterweight to fasting-related restlessness.',
     category: 'activity',
     minHours: 12,
     maxHours: Infinity,
@@ -227,11 +227,11 @@ const scienceTips: FastingTip[] = [
     category: 'science',
     minHours: 16,
     maxHours: Infinity,
-    source: 'Yoshinori Ohsumi — Nobel Prize 2016',
+    source: 'Yoshinori Ohsumi, Nobel Prize 2016',
   },
   {
     id: 'sci-02',
-    text: 'Growth hormone rises substantially during fasting — several-fold in some studies. It helps preserve lean muscle while your body draws on fat for energy.',
+    text: 'Growth hormone rises substantially during fasting, several-fold in some studies. It helps preserve lean muscle while your body draws on fat for energy.',
     category: 'science',
     minHours: 24,
     maxHours: Infinity,
@@ -239,11 +239,11 @@ const scienceTips: FastingTip[] = [
   },
   {
     id: 'sci-03',
-    text: 'BDNF (Brain-Derived Neurotrophic Factor) increases during fasting. This protein grows new neurons and strengthens existing connections — why fasting sharpens your mind.',
+    text: 'BDNF (Brain-Derived Neurotrophic Factor) increases during fasting. This protein grows new neurons and strengthens existing connections. That is part of why fasting can sharpen your mind.',
     category: 'science',
     minHours: 12,
     maxHours: Infinity,
-    source: 'Dr. Mark Mattson — Johns Hopkins',
+    source: 'Dr. Mark Mattson, Johns Hopkins',
   },
   {
     id: 'sci-04',
@@ -254,11 +254,11 @@ const scienceTips: FastingTip[] = [
   },
   {
     id: 'sci-05',
-    text: 'Ketones (BHB) are an efficient fuel your brain can use for a large share of its energy during longer fasts — one reason focus often feels steadier.',
+    text: 'Ketones (BHB) are an efficient fuel your brain can use for a large share of its energy during longer fasts. It is one reason focus often feels steadier.',
     category: 'science',
     minHours: 20,
     maxHours: Infinity,
-    source: 'Cahill, G.F. — Fuel Metabolism in Starvation (2006)',
+    source: 'Cahill, G.F., Fuel Metabolism in Starvation (2006)',
   },
   {
     id: 'sci-06',
@@ -280,7 +280,7 @@ const scienceTips: FastingTip[] = [
     category: 'science',
     minHours: 48,
     maxHours: Infinity,
-    source: 'USC Longevity Institute — Valter Longo (2014)',
+    source: 'USC Longevity Institute, Valter Longo (2014)',
   },
   {
     id: 'sci-09',
@@ -288,7 +288,7 @@ const scienceTips: FastingTip[] = [
     category: 'science',
     minHours: 0,
     maxHours: 72,
-    source: 'Zauner et al. — American Journal of Clinical Nutrition (2000)',
+    source: 'Zauner et al., American Journal of Clinical Nutrition (2000)',
   },
   {
     id: 'sci-10',
@@ -311,7 +311,7 @@ const mentalTips: FastingTip[] = [
   },
   {
     id: 'ment-02',
-    text: 'Hunger comes in waves, not a constant climb. Each wave lasts 15-20 minutes. Distract yourself — walk, drink water with salt, or do deep breathing. It passes.',
+    text: 'Hunger comes in waves, not a constant climb. Each wave lasts 15-20 minutes. Distract yourself: walk, drink water with salt, or do deep breathing. It passes.',
     category: 'mental',
     minHours: 0,
     maxHours: 30,
@@ -339,7 +339,7 @@ const mentalTips: FastingTip[] = [
   },
   {
     id: 'ment-06',
-    text: 'Sleep can be disrupted during fasting due to elevated cortisol and adrenaline. Take 200mg magnesium glycinate before bed — it\'s the best natural sleep aid during fasts.',
+    text: 'Sleep can be disrupted during fasting due to elevated cortisol and adrenaline. Take 200mg magnesium glycinate before bed. It\'s one of the best natural sleep aids during fasts.',
     category: 'mental',
     minHours: 16,
     maxHours: Infinity,
@@ -405,7 +405,7 @@ const safetyTips: FastingTip[] = [
 const breakingTips: FastingTip[] = [
   {
     id: 'brk-01',
-    text: 'Break fasts under 24h with anything you want — your digestive system is still primed. For 24-48h, start with soup, eggs, or avocado.',
+    text: 'Break fasts under 24h with anything you want. Your digestive system is still primed. For 24-48h, start with soup, eggs, or avocado.',
     category: 'breaking',
     minHours: 20,
     maxHours: Infinity,
@@ -419,7 +419,7 @@ const breakingTips: FastingTip[] = [
   },
   {
     id: 'brk-03',
-    text: 'Avoid high-sugar or high-carb foods when breaking extended fasts. They cause a massive insulin spike on a sensitized system — you\'ll feel terrible and may get diarrhea.',
+    text: 'Avoid high-sugar or high-carb foods when breaking extended fasts. They cause a massive insulin spike on a sensitized system, so you\'ll feel terrible and may get diarrhea.',
     category: 'breaking',
     minHours: 24,
     maxHours: Infinity,
@@ -433,7 +433,7 @@ const breakingTips: FastingTip[] = [
   },
   {
     id: 'brk-05',
-    text: 'Your stomach shrinks during fasting — literally. You\'ll feel full much faster than expected. Listen to your body and eat slowly. There\'s no rush.',
+    text: 'Your stomach really does feel smaller during fasting. You\'ll feel full much faster than expected. Listen to your body and eat slowly. There\'s no rush.',
     category: 'breaking',
     minHours: 24,
     maxHours: Infinity,
@@ -445,7 +445,7 @@ const breakingTips: FastingTip[] = [
 const motivationTips: FastingTip[] = [
   {
     id: 'mot-01',
-    text: 'Every hour you fast is an hour your body heals. You\'re not starving — you\'re giving your cells the rest they\'ve been craving since your last meal.',
+    text: 'Every hour you fast is an hour your body heals. You\'re not starving. You\'re giving your cells the rest they\'ve been craving since your last meal.',
     category: 'motivation',
     minHours: 0,
     maxHours: Infinity,
@@ -466,14 +466,14 @@ const motivationTips: FastingTip[] = [
   },
   {
     id: 'mot-04',
-    text: 'You\'re training discipline, not just burning fat. The mental strength you build during fasting transfers to every area of your life — work, relationships, goals.',
+    text: 'You\'re training discipline, not just burning fat. The mental strength you build during fasting transfers to every area of your life: work, relationships, goals.',
     category: 'motivation',
     minHours: 0,
     maxHours: Infinity,
   },
   {
     id: 'mot-05',
-    text: 'Most people quit right before the breakthrough. The discomfort you feel now IS the transformation. Embrace it — the other side is mental clarity you\'ve never experienced.',
+    text: 'Most people quit right before the breakthrough. The discomfort you feel now IS the transformation. Embrace it. On the other side is mental clarity you\'ve never experienced.',
     category: 'motivation',
     minHours: 12,
     maxHours: 36,
@@ -487,7 +487,7 @@ const motivationTips: FastingTip[] = [
   },
   {
     id: 'mot-07',
-    text: 'You chose to be here. Nobody forced you to fast. Remember your why — whether it\'s health, mental clarity, weight loss, or self-discipline. Hold that reason close.',
+    text: 'You chose to be here. Nobody forced you to fast. Remember your why, whether it\'s health, mental clarity, weight loss, or self-discipline. Hold that reason close.',
     category: 'motivation',
     minHours: 0,
     maxHours: Infinity,

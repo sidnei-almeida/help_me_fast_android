@@ -20,6 +20,7 @@ const PATH_LENGTH = R * ARC_SPAN_RAD;
 
 const TRACK_COLOR = '#E8ECF0';
 const BRAND_GRADIENT = ['#FDCB6E', '#E17055'] as const;
+const DONE_GRADIENT = ['#55EFC4', '#00B894'] as const;
 
 function polar(cx: number, cy: number, r: number, deg: number) {
   const rad = ((deg - 90) * Math.PI) / 180;
@@ -130,6 +131,10 @@ export function MetabolicWheel({
               <Stop offset="0%" stopColor={BRAND_GRADIENT[0]} />
               <Stop offset="100%" stopColor={BRAND_GRADIENT[1]} />
             </LinearGradient>
+            <LinearGradient id="doneGrad" x1="0" y1="0" x2="1" y2="0" gradientUnits="objectBoundingBox">
+              <Stop offset="0%" stopColor={DONE_GRADIENT[0]} />
+              <Stop offset="100%" stopColor={DONE_GRADIENT[1]} />
+            </LinearGradient>
           </Defs>
           {/* Layer 1: Track */}
           <Path
@@ -140,7 +145,17 @@ export function MetabolicWheel({
             strokeLinecap="round"
           />
           {/* Layer 2: Progress with gradient — only when fasting; full at start, drains as time passes */}
-          {isActive && goalSeconds > 0 && (
+          {/* Goal reached: the arc is empty, so show a full success ring instead of a bare grey track */}
+          {isActive && goalSeconds > 0 && progress >= 1 && (
+            <Path
+              d={trackPath}
+              fill="none"
+              stroke="url(#doneGrad)"
+              strokeWidth={STROKE_W}
+              strokeLinecap="round"
+            />
+          )}
+          {isActive && goalSeconds > 0 && progress < 1 && (
             <Path
               d={trackPath}
               fill="none"
@@ -200,7 +215,7 @@ export function MetabolicWheel({
           {isActive && caption ? <Text style={styles.captionText}>{caption}</Text> : null}
           {isActive && (
             <ExpoLinearGradient
-              colors={BRAND_GRADIENT}
+              colors={progress >= 1 ? DONE_GRADIENT : BRAND_GRADIENT}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
               style={styles.phasePill}
@@ -233,7 +248,7 @@ export function MetabolicWheel({
 }
 
 const styles = StyleSheet.create({
-  wrapper: { alignItems: 'center' },
+  wrapper: { width: '100%', alignItems: 'center' },
   wheelContainer: {
     width: SIZE,
     height: SIZE,
@@ -318,7 +333,6 @@ const styles = StyleSheet.create({
   },
   stageCard: {
     width: '100%',
-    maxWidth: 340,
     marginTop: 20,
     flexDirection: 'row',
     alignItems: 'stretch',

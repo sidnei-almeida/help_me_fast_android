@@ -55,6 +55,7 @@ export function JourneyTimeline({ elapsedSeconds, goalHours, startTime }: Journe
         return (
           <View key={`${m.kind}-${m.hours}`} style={styles.row}>
             <View style={styles.rail}>
+              <View style={[styles.lineTop, i === 0 ? styles.lineHidden : reached && { backgroundColor: color }]} />
               <View
                 style={[
                   styles.node,
@@ -69,9 +70,13 @@ export function JourneyTimeline({ elapsedSeconds, goalHours, startTime }: Journe
                   <Check size={11} color="#FFF" strokeWidth={3} />
                 ) : null}
               </View>
-              {!isLast ? (
-                <View style={[styles.line, hoursNow >= milestones[i + 1].hours && { backgroundColor: color }]} />
-              ) : null}
+              <View
+                style={[
+                  styles.line,
+                  isLast && styles.lineHidden,
+                  !isLast && hoursNow >= milestones[i + 1].hours && { backgroundColor: color },
+                ]}
+              />
             </View>
             <View style={[styles.content, isCurrent && { backgroundColor: color + '12' }]}>
               <View style={styles.contentText}>
@@ -132,26 +137,27 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 14,
   },
-  nodeCurrent: { width: 22, height: 22, borderRadius: 11, borderWidth: 6, marginTop: 13, backgroundColor: '#FFFFFF' },
-  line: { flex: 1, width: 2, backgroundColor: RAIL, marginVertical: 2 },
+  nodeCurrent: { width: 22, height: 22, borderRadius: 11, borderWidth: 6, marginVertical: -1, backgroundColor: '#FFFFFF' },
+  lineTop: { height: 14, width: 2, backgroundColor: RAIL },
+  line: { flex: 1, width: 2, backgroundColor: RAIL },
+  lineHidden: { backgroundColor: 'transparent' },
   content: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginLeft: 8,
-    marginBottom: 4,
+    marginVertical: 2,
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 12,
   },
-  contentText: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 },
-  hour: { width: 34, fontSize: 13, fontWeight: '700', color: SLATE_400 },
+  contentText: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  hour: { width: 42, fontSize: 13, fontWeight: '700', color: SLATE_400 },
   title: { flex: 1, fontSize: 14, fontWeight: '600', color: SLATE_900 },
   titleDone: { color: SLATE_600, fontWeight: '500' },
-  metaWrap: { alignItems: 'flex-end', marginLeft: 8 },
+  metaWrap: { alignItems: 'flex-end', marginLeft: 8, flexShrink: 0 },
   meta: { fontSize: 12, fontWeight: '600', color: SLATE_600 },
   at: { fontSize: 11, color: SLATE_400, marginTop: 1 },
 });

@@ -51,7 +51,7 @@ interface Action {
 }
 
 const CRAVING_ACTIONS: Action[] = [
-  { icon: Droplets, title: 'Drink a full glass of water', detail: 'Sparkling works even better — it fills the stomach.' },
+  { icon: Droplets, title: 'Drink a full glass of water', detail: 'Sparkling works even better because it fills the stomach.' },
   { icon: Footprints, title: 'Walk for 10 minutes', detail: 'Movement and a change of scenery break the loop.' },
   { icon: Wind, title: 'Box breathing, 2 minutes', detail: 'In 4s, hold 4s, out 4s, hold 4s. Lowers stress-driven cravings.' },
   { icon: Sparkles, title: 'Brush your teeth', detail: 'A clear “kitchen closed” signal to your brain.' },
@@ -82,7 +82,7 @@ function refeedAdvice(elapsedSeconds: number): { title: string; text: string } {
   if (hours < 48) {
     return {
       title: 'Start light',
-      text: 'Begin with something gentle — eggs, soup or avocado — and wait ~30 minutes before a larger meal. Go easy on sugar and refined carbs.',
+      text: 'Begin with something gentle like eggs, soup or avocado, and wait ~30 minutes before a larger meal. Go easy on sugar and refined carbs.',
     };
   }
   if (hours < 72) {
@@ -93,7 +93,7 @@ function refeedAdvice(elapsedSeconds: number): { title: string; text: string } {
   }
   return {
     title: 'Refeed carefully',
-    text: 'After 72h+, start with broth and very small portions for the first day. Long fasts carry a risk of refeeding syndrome — if you have any health conditions, get medical guidance.',
+    text: 'After 72h+, start with broth and very small portions for the first day. Long fasts carry a risk of refeeding syndrome. If you have any health conditions, get medical guidance.',
   };
 }
 
@@ -253,7 +253,7 @@ export function CheckInModal({
             <Text style={[styles.eyebrow, { color: '#3182CE' }]}>Craving</Text>
             <Text style={styles.title}>This wave will pass</Text>
             <Text style={styles.body}>
-              Habit hunger is triggered by the clock, boredom or stress — not by your body needing fuel. It usually
+              Habit hunger is triggered by the clock, boredom or stress, not by your body needing fuel. It usually
               fades within 15–20 minutes. Try one of these:
             </Text>
             {renderActions(pickCravingActions(seed), '#3182CE')}
@@ -263,7 +263,7 @@ export function CheckInModal({
                 <Text style={styles.calloutText}>Only {formatDuration(remainingSeconds)} left to your {targetHours}h goal.</Text>
               </View>
             ) : null}
-            <PrimaryButton label="I’ve got this — keep fasting" onPress={() => close()} />
+            <PrimaryButton label="I’ve got this, keep fasting" onPress={() => close()} />
             <SecondaryButton label="I still want to eat" onPress={() => goTo('end')} />
           </>
         );
@@ -274,7 +274,7 @@ export function CheckInModal({
             <Text style={[styles.eyebrow, { color: ORANGE }]}>Hunger</Text>
             <Text style={styles.title}>Hunger comes in waves</Text>
             <Text style={styles.body}>
-              Ghrelin, the hunger hormone, rises around your usual meal times and then falls again — even if you don’t
+              Ghrelin, the hunger hormone, rises around your usual meal times and then falls again, even if you don’t
               eat. Before you decide:
             </Text>
             {renderActions(HUNGER_ACTIONS, ORANGE)}
@@ -332,7 +332,7 @@ export function CheckInModal({
             </View>
             {!goalReached && targetHours ? (
               <Text style={styles.body}>
-                You’re {formatDuration(remainingSeconds)} from your goal. Stopping early is okay — every hour still counts,
+                You’re {formatDuration(remainingSeconds)} from your goal. Stopping early is okay. Every hour still counts,
                 and this fast will be saved to your history.
               </Text>
             ) : null}

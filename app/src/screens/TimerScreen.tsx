@@ -49,7 +49,7 @@ function FadeInView({ delay = 0, children }: { delay?: number; children: React.R
       easing: Easing.out(Easing.cubic),
     }).start();
   }, [opacity, delay]);
-  return <Animated.View style={{ opacity }}>{children}</Animated.View>;
+  return <Animated.View style={{ opacity, width: '100%' }}>{children}</Animated.View>;
 }
 
 export function TimerScreen() {
@@ -194,7 +194,7 @@ export function TimerScreen() {
             <View style={styles.goalBanner}>
               <PartyPopper size={22} color={GREEN} />
               <Text style={styles.goalBannerText}>
-                You hit your {targetHours}h goal! End the fast whenever you're ready — or keep going.
+                You hit your {targetHours}h goal! End the fast whenever you're ready, or keep going.
               </Text>
             </View>
           ) : null}
@@ -337,14 +337,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: theme.spacing.lg,
     paddingBottom: 80,
-    alignItems: 'center',
   },
   wheelWrapper: {
+    width: '100%',
+    alignItems: 'center',
     marginBottom: theme.spacing.lg,
   },
   progressBar: {
     width: '100%',
-    maxWidth: 400,
     height: 6,
     backgroundColor: '#DFE6E9',
     borderRadius: theme.borderRadius.md,
@@ -358,10 +358,12 @@ const styles = StyleSheet.create({
   },
   progressText: {
     fontSize: 12,
+    textAlign: 'center',
     color: theme.colors.text.secondary,
     marginBottom: theme.spacing.sm,
   },
   startedRow: {
+    alignSelf: 'center',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
@@ -448,7 +450,7 @@ const styles = StyleSheet.create({
   tipNextText: { fontSize: 11, color: theme.colors.text.muted, fontWeight: '600' },
   tipText: { fontSize: 15, color: theme.colors.text.primary, lineHeight: 23 },
   tipSource: { fontSize: 12, color: '#A0AEC0', fontStyle: 'italic', marginTop: 10 },
-  footer: { width: '100%', maxWidth: 400, gap: theme.spacing.md },
+  footer: { width: '100%', gap: theme.spacing.md },
   endButtonTouchable: { width: '100%' },
   endButtonGradient: {
     width: '100%',
@@ -459,10 +461,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   endButtonText: { fontFamily: theme.fontFamily.bold, color: '#FFF', fontSize: theme.fontSize.base, fontWeight: '700' },
-  idle: { width: '100%', maxWidth: 500, alignItems: 'center', gap: theme.spacing.md },
+  idle: { width: '100%', alignItems: 'center', gap: theme.spacing.md },
   sliderSection: {
     width: '100%',
-    maxWidth: 400,
     paddingHorizontal: 4,
   },
   sliderLabel: {

@@ -9,10 +9,10 @@ import {
   ActivityIndicator,
   RefreshControl,
   Platform,
-  Dimensions,
   Animated,
   Easing,
   Alert,
+  useWindowDimensions,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -32,8 +32,11 @@ const ORANGE = '#E17055';
 const ORANGE_LIGHT = '#FDCB6E';
 const GREEN = '#00B894';
 const TIMELINE_COLOR = '#E2E8F0';
-const CHART_HEIGHT = 200;
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const CHART_HEIGHT = 180;
+const CHART_PADDING = 12;
+const LIST_PADDING = 24;
+const CHART_EDGE = 24;
+const Y_LABEL_WIDTH = 32;
 
 const formatDateLabel = formatDateShort;
 
@@ -83,6 +86,14 @@ function WeightChart({
     return { offset, maxValue: step * sections, step, sections };
   }, [chartData]);
 
+  // Card width = window minus the list's horizontal padding. Measuring the card with onLayout
+  // feeds back (the chart widens the card), so derive it from the window instead.
+  const { width: windowWidth } = useWindowDimensions();
+  const cardWidth = windowWidth - LIST_PADDING * 2;
+  const plotWidth = Math.max(0, cardWidth - CHART_PADDING * 2 - Y_LABEL_WIDTH);
+  const n = chartData?.length ?? 0;
+  const spacing = n > 1 ? Math.max(28, (plotWidth - CHART_EDGE * 2) / (n - 1)) : 0;
+
   if (!chartData || chartData.length === 0 || !yScale) {
     return (
       <View style={[styles.chartContainer, styles.chartPlaceholder]}>
@@ -92,11 +103,11 @@ function WeightChart({
   }
 
   return (
-    <View style={styles.chartContainer}>
+    <View style={styles.chartCard}>
       <LineChart
         data={chartData}
         areaChart
-        curved
+        curved={false}
         thickness={3}
         color={ORANGE}
         startFillColor={ORANGE_LIGHT}
@@ -105,14 +116,16 @@ function WeightChart({
         endOpacity={0}
         gradientDirection="vertical"
         hideDataPoints={false}
-        dataPointsColor="#FFFFFF"
-        dataPointsRadius={6}
+        dataPointsColor={ORANGE}
+        dataPointsRadius={5}
         textColor1={theme.colors.text.secondary}
         textFontSize={10}
-        width={SCREEN_WIDTH - 48}
-        initialSpacing={16}
-        endSpacing={16}
-        spacing={Math.max(40, (SCREEN_WIDTH - 80) / chartData.length)}
+        width={plotWidth}
+        initialSpacing={CHART_EDGE}
+        endSpacing={CHART_EDGE}
+        spacing={spacing}
+        yAxisLabelWidth={Y_LABEL_WIDTH}
+        xAxisLabelTextStyle={{ color: theme.colors.text.secondary, fontSize: 10 }}
         noOfSections={yScale.sections}
         yAxisOffset={yScale.offset}
         maxValue={yScale.maxValue}
@@ -223,11 +236,16 @@ function TimelineCard({
   const row = (
     <View style={styles.timelineRow}>
       <View style={styles.timelineRail}>
-        {!isFirst && <View style={styles.timelineLine} />}
+        <View style={[styles.timelineLineTop, isFirst && styles.timelineLineHidden]} />
         <View style={styles.timelineBullet} />
-        {!isLast && <View style={styles.timelineLine} />}
+        <View style={[styles.timelineLine, isLast && styles.timelineLineHidden]} />
       </View>
-      <TouchableOpacity style={styles.timelineCard} onLongPress={onLongPress} activeOpacity={0.9} delayLongPress={350}>
+      <TouchableOpacity
+        style={[styles.timelineCard, !isLast && styles.timelineCardSpaced]}
+        onLongPress={onLongPress}
+        activeOpacity={0.9}
+        delayLongPress={350}
+      >
         {photoUri ? (
           <Image source={{ uri: photoUri }} style={styles.timelinePhoto} resizeMode="cover" />
         ) : null}
@@ -382,7 +400,7 @@ export function HistoryScreen() {
   };
 
   const confirmDeleteEntry = (entry: HistoryEntry) => {
-    Alert.alert('Delete entry?', `${formatDateLabel(entry.date)}${entry.weight != null ? ` — ${formatWeight(entry.weight, weightUnit)} ${weightUnit}` : ''}`, [
+    Alert.alert('Delete entry?', `${formatDateLabel(entry.date)}${entry.weight != null ? `, ${formatWeight(entry.weight, weightUnit)} ${weightUnit}` : ''}`, [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Delete', style: 'destructive', onPress: () => deleteEntry(entry.id) },
     ]);
@@ -390,7 +408,7 @@ export function HistoryScreen() {
 
   const confirmDeleteFast = (fast: FastEntry) => {
     if (!state.history) return;
-    Alert.alert('Delete fast?', `${formatDuration(fast.duration ?? 0)} — ${formatDateTime(fast.startTime)}`, [
+    Alert.alert('Delete fast?', `${formatDuration(fast.duration ?? 0)}, started ${formatDateTime(fast.startTime)}`, [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Delete',
@@ -582,7 +600,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   listContent: {
-    paddingHorizontal: 24,
+    paddingHorizontal: LIST_PADDING,
     paddingTop: 16,
   },
   empty: {
@@ -665,6 +683,18 @@ const styles = StyleSheet.create({
     height: CHART_HEIGHT,
     justifyContent: 'center',
   },
+  chartCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: CHART_PADDING,
+    paddingTop: 16,
+    marginBottom: 16,
+    overflow: 'hidden',
+    ...Platform.select({
+      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8 },
+      android: { elevation: 2 },
+    }),
+  },
   chartPlaceholder: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
@@ -717,19 +747,24 @@ const styles = StyleSheet.create({
   },
   timelineRow: {
     flexDirection: 'row',
-    marginBottom: 16,
   },
   timelineRail: {
     width: 24,
     alignItems: 'center',
     marginRight: 14,
   },
+  timelineLineTop: {
+    width: 2,
+    height: 18,
+    backgroundColor: TIMELINE_COLOR,
+  },
   timelineLine: {
     width: 2,
     backgroundColor: TIMELINE_COLOR,
     flex: 1,
-    minHeight: 12,
   },
+  timelineLineHidden: { backgroundColor: 'transparent' },
+  timelineCardSpaced: { marginBottom: 16 },
   timelineBullet: {
     width: 12,
     height: 12,

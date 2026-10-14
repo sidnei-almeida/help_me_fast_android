@@ -63,7 +63,7 @@ export async function scheduleFastNotifications(startTime: number, targetHours: 
       GOAL_NOTIFICATION_ID,
       new Date(goalAt),
       'Goal reached! 🎉',
-      `You completed your ${targetHours}h fast. Break it gently — or keep going if you feel good.`
+      `You completed your ${targetHours}h fast. Break it gently, or keep going if you feel good.`
     );
     if (targetHours >= 16) {
       await scheduleAt(

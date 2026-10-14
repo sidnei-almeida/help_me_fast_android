@@ -31,7 +31,7 @@ export const FASTING_STAGES: FastingStage[] = [
     happening:
       'Blood sugar and insulin rise as your last meal is absorbed. Your body uses this incoming energy and stores the surplus as glycogen and fat.',
     feel: 'Satisfied, with normal energy.',
-    focus: 'Start hydrating early — a glass of water now makes the next hours easier.',
+    focus: 'Start hydrating early. A glass of water now makes the next hours easier.',
   },
   {
     id: 'settling',
@@ -80,7 +80,7 @@ export const FASTING_STAGES: FastingStage[] = [
     summary: 'Ketones are fueling your brain.',
     happening:
       'Ketones reach measurable levels and your brain starts using them alongside glucose. Your kidneys excrete more sodium as insulin stays low.',
-    feel: 'Lighter and clear-headed — or headachy if electrolytes are low.',
+    feel: 'Lighter and clear-headed, or headachy if electrolytes are low.',
     focus: 'Take electrolytes now: sodium first, then potassium and magnesium.',
   },
   {
